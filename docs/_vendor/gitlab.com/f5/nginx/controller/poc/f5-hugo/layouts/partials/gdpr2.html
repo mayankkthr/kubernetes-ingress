@@ -1,5 +1,6 @@
 <!-- GDPR HTML start -->
 <div id="nx_gdpr_modal2" class="hidden">
+  {{ "<!-- BEGIN NOINDEX -->" | safeHTML }}
   <div id="nx_gdpr_modal_inner2">
     <div id="nx_gdpr_modal_more_info2" class="hidden">
       <div class="less-info-wrap">
@@ -41,5 +42,7 @@
       <button class="nginx-button button-secondary" id="nx_gdpr_accept_btn">Accept</button>
     </div>
   </div>
+  {{ "<!-- END NOINDEX -->" | safeHTML }}
 </div><!-- /#nx_gdpr_modal -->
+
 <!-- GDPR HTML end -->
