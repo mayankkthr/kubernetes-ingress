@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.3
 ARG BUILD_OS=debian
-ARG NGINX_PLUS_VERSION=r24
+ARG NGINX_PLUS_VERSION=r25
 ARG UBI_VERSION=8
 ARG FILES=
 
@@ -23,13 +23,15 @@ RUN apk add --no-cache libcap \
 
 
 ############################################# Base image for Alpine with NGINX Plus #############################################
-FROM alpine:3.13 as alpine-plus
+FROM alpine:3.14 as alpine-plus
 ARG NGINX_PLUS_VERSION
 
 RUN --mount=type=secret,id=nginx-repo.crt,dst=/etc/apk/cert.pem,mode=0644 \
 	--mount=type=secret,id=nginx-repo.key,dst=/etc/apk/cert.key,mode=0644 \
 	wget -nv -O /etc/apk/keys/nginx_signing.rsa.pub https://cs.nginx.com/static/keys/nginx_signing.rsa.pub \
 	&& printf "%s\n" "https://pkgs.nginx.com/plus/alpine/v$(grep -E -o '^[0-9]+\.[0-9]+' /etc/alpine-release)/main" >> /etc/apk/repositories \
+	# test R25
+	&& sed -i 's|pkgs|pkgs-test|g' /etc/apk/repositories \
 	&& apk add --no-cache libcap nginx-plus~${NGINX_PLUS_VERSION#r} nginx-plus-module-njs~${NGINX_PLUS_VERSION#r}
 
 
@@ -47,6 +49,9 @@ RUN --mount=type=secret,id=nginx-repo.crt,dst=/etc/ssl/nginx/nginx-repo.crt,mode
 	&& curl -sSL -o /etc/apt/apt.conf.d/90pkgs-nginx https://cs.nginx.com/static/files/90pkgs-nginx \
 	&& printf "%s\n" "Acquire::https::pkgs.nginx.com::User-Agent  \"k8s-ic-$IC_VERSION-apt\";" >> /etc/apt/apt.conf.d/90pkgs-nginx \
 	&& printf "%s\n" "deb https://pkgs.nginx.com/plus/debian buster nginx-plus" > /etc/apt/sources.list.d/nginx-plus.list \
+	# test R25
+	&& sed -i 's|pkgs|pkgs-test|g' /etc/apt/apt.conf.d/90pkgs-nginx \
+	&& sed -i 's|pkgs|pkgs-test|g' /etc/apt/sources.list.d/nginx-plus.list \
 	&& apt-get update \
 	&& apt-get install --no-install-recommends --no-install-suggests -y \
 	nginx-plus-${NGINX_PLUS_VERSION} nginx-plus-module-njs-${NGINX_PLUS_VERSION} \
